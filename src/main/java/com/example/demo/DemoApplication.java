@@ -9,6 +9,13 @@ import org.springframework.context.annotation.Import;
 public class DemoApplication {
 
 	public static void main(String[] args) {
-		System.exit(SpringApplication.exit(SpringApplication.run(DemoApplication.class, args)));
+		System.exit(
+				SpringApplication.exit(
+						SpringApplication.run(
+								DemoApplication.class,
+								args
+						)
+				)
+		);
 	}
 }
