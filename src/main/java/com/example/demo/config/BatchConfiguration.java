@@ -1,5 +1,9 @@
-package com.example.demo;
+package com.example.demo.config;
 
+import com.example.demo.dao.TestDTO;
+import com.example.demo.processors.TestItemProcessor;
+import com.example.demo.readers.TestItemReader;
+import com.example.demo.writers.TestItemWriter;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.JobParametersInvalidException;

@@ -1,5 +1,6 @@
-package com.example.demo;
+package com.example.demo.writers;
 
+import com.example.demo.dao.TestDTO;
 import org.springframework.batch.item.ItemWriter;
 
 import java.util.List;

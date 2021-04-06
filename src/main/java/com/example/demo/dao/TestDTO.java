@@ -1,4 +1,4 @@
-package com.example.demo;
+package com.example.demo.dao;
 
 /**
  * Created by jeias on 6/6/17.

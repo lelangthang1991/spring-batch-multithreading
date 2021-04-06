@@ -1,9 +1,9 @@
-package com.example.demo;
+package com.example.demo.processors;
 
+import com.example.demo.dao.TestDTO;
 import org.springframework.batch.item.ItemProcessor;
 
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.ThreadPoolExecutor;
 
 public class TestItemProcessor implements ItemProcessor<String, TestDTO> {
 
