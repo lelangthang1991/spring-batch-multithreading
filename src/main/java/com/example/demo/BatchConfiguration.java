@@ -106,7 +106,7 @@ public class BatchConfiguration {
         return this.jobs.get("job1").start(step1()).build();
     }
 
-    @Scheduled(cron = "0 * * * * *", zone =  "America/Sao_Paulo")
+//    @Scheduled(cron = "0 * * * * *", zone =  "America/Sao_Paulo")
     public void schedule() throws JobParametersInvalidException, JobExecutionAlreadyRunningException, JobRestartException, JobInstanceAlreadyCompleteException {
 
         jobLauncher.run(job1(), new JobParametersBuilder().addLong("time", System.currentTimeMillis()).toJobParameters());
