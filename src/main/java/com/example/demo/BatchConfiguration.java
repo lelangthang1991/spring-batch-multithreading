@@ -8,6 +8,7 @@ import org.springframework.batch.core.configuration.annotation.EnableBatchProces
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
 import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
 import org.springframework.batch.core.repository.JobRestartException;
@@ -103,7 +104,11 @@ public class BatchConfiguration {
 
     @Bean
     protected Job job1(){
-        return this.jobs.get("job1").start(step1()).build();
+        return this.jobs.get("job1")
+                .preventRestart()
+                .incrementer(new RunIdIncrementer())
+                .start(step1())
+                .build();
     }
 
 //    @Scheduled(cron = "0 * * * * *", zone =  "America/Sao_Paulo")
