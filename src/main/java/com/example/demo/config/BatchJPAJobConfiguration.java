@@ -19,7 +19,6 @@ import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -55,7 +54,7 @@ public class BatchJPAJobConfiguration {
     @Bean
     protected Step importData() {
         return this.steps.get("importData")
-                .<CustomerInfoDAO, Future<CustomerInfo>>chunk(50)
+                .<CustomerInfoDAO, Future<CustomerInfo>>chunk(100)
                 .reader(csvReader())
                 .processor(processCustomerDataAsync())
                 .writer(writeCustomerDataAsync())
@@ -92,7 +91,7 @@ public class BatchJPAJobConfiguration {
     public TaskExecutor getAsyncExecutorCustomerInfo() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(8);
-        executor.setMaxPoolSize(10);
+        executor.setMaxPoolSize(8);
         executor.setQueueCapacity(100);
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
         executor.setThreadNamePrefix("AsyncExecutor-");
