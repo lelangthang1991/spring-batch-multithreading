@@ -35,7 +35,14 @@ public class BatchJPAJobConfiguration {
 
     @Value("${reader.input.file}")
     String inputFile;
-
+    @Value("${async.thread.max.pool}")
+    String maxThread;
+    @Value("${async.thread.core.pool}")
+    String core;
+    @Value("${async.thread.queue}")
+    String queue;
+    @Value("${job.chunk.size}")
+    String chunk;
     @Autowired
     private JobBuilderFactory jobs;
 
@@ -54,7 +61,7 @@ public class BatchJPAJobConfiguration {
     @Bean
     protected Step importData() {
         return this.steps.get("importData")
-                .<CustomerInfoDAO, Future<CustomerInfo>>chunk(100)
+                .<CustomerInfoDAO, Future<CustomerInfo>>chunk(Integer.parseInt(chunk))
                 .reader(csvReader())
                 .processor(processCustomerDataAsync())
                 .writer(writeCustomerDataAsync())
@@ -90,9 +97,9 @@ public class BatchJPAJobConfiguration {
     @Bean(name = "asyncExecutorCustomerInfo")
     public TaskExecutor getAsyncExecutorCustomerInfo() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(8);
-        executor.setMaxPoolSize(8);
-        executor.setQueueCapacity(100);
+        executor.setCorePoolSize(Integer.parseInt(core));
+        executor.setMaxPoolSize(Integer.parseInt(maxThread));
+        executor.setQueueCapacity(Integer.parseInt(queue));
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
         executor.setThreadNamePrefix("AsyncExecutor-");
         return executor;
@@ -110,12 +117,6 @@ public class BatchJPAJobConfiguration {
         DefaultLineMapper<CustomerInfoDAO> lineMapper = new DefaultLineMapper<>();
         lineMapper.setLineTokenizer(lineTokenizer);
         lineMapper.setFieldSetMapper(fm);
-//        lineMapper.setFieldSetMapper(new BeanWrapperFieldSetMapper<CustomerInfoDAO>() {
-//            @Override
-//            public void setTargetType(Class<? extends CustomerInfoDAO> type) {
-//                super.setTargetType(type);
-//            }
-//        });
 
         FlatFileItemReader<CustomerInfoDAO> reader = new FlatFileItemReader<>();
         reader.setResource(new FileSystemResource(inputFile));
