@@ -1,6 +1,7 @@
 package com.example.demo.config;
 
 import com.example.demo.dao.TestDTO;
+import com.example.demo.model.CustomerInfo;
 import com.example.demo.processors.TestItemProcessor;
 import com.example.demo.readers.TestItemReader;
 import com.example.demo.writers.TestItemWriter;
@@ -21,10 +22,16 @@ import org.springframework.batch.integration.async.AsyncItemWriter;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
+import org.springframework.batch.item.file.FlatFileItemReader;
+import org.springframework.batch.item.file.LineMapper;
+import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
+import org.springframework.batch.item.file.mapping.DefaultLineMapper;
+import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
@@ -55,22 +62,22 @@ public class BatchConfiguration {
     private JobLauncher jobLauncher;
 
     @Bean
-    public ItemReader<String> reader(){
+    public ItemReader<String> reader() {
         return new TestItemReader();
     }
 
     @Bean
-    public ItemProcessor<String, TestDTO> processor(){
+    public ItemProcessor<String, TestDTO> processor() {
         return new TestItemProcessor();
     }
 
     @Bean
-    public ItemWriter<TestDTO> writer(){
+    public ItemWriter<TestDTO> writer() {
         return new TestItemWriter();
     }
 
     @Bean
-    public ItemProcessor<String, Future<TestDTO>> asyncItemProcessor(){
+    public ItemProcessor<String, Future<TestDTO>> asyncItemProcessor() {
         AsyncItemProcessor<String, TestDTO> asyncItemProcessor = new AsyncItemProcessor<>();
         asyncItemProcessor.setDelegate(processor());
         asyncItemProcessor.setTaskExecutor(getAsyncExecutor());
@@ -78,15 +85,14 @@ public class BatchConfiguration {
     }
 
     @Bean
-    public ItemWriter<Future<TestDTO>> asyncItemWriter(){
+    public ItemWriter<Future<TestDTO>> asyncItemWriter() {
         AsyncItemWriter<TestDTO> asyncItemWriter = new AsyncItemWriter<>();
         asyncItemWriter.setDelegate(writer());
         return asyncItemWriter;
     }
 
     @Bean(name = "asyncExecutor")
-    public TaskExecutor getAsyncExecutor()
-    {
+    public TaskExecutor getAsyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(corePoolSize);
         executor.setMaxPoolSize(corePoolSize);
@@ -97,9 +103,9 @@ public class BatchConfiguration {
     }
 
     @Bean
-    protected Step step1(){
+    protected Step step1() {
         return this.steps.get("step1")
-                .<String, Future<TestDTO>> chunk(corePoolSize)
+                .<String, Future<TestDTO>>chunk(corePoolSize)
                 .reader(reader())
                 .processor(asyncItemProcessor())
                 .writer(asyncItemWriter())
@@ -107,7 +113,7 @@ public class BatchConfiguration {
     }
 
     @Bean
-    protected Job job1(){
+    protected Job job1() {
         return this.jobs.get("job1")
                 .preventRestart()
                 .incrementer(new RunIdIncrementer())
@@ -115,7 +121,7 @@ public class BatchConfiguration {
                 .build();
     }
 
-//    @Scheduled(cron = "0 * * * * *", zone =  "America/Sao_Paulo")
+    //    @Scheduled(cron = "0 * * * * *", zone =  "America/Sao_Paulo")
     public void schedule() throws JobParametersInvalidException, JobExecutionAlreadyRunningException, JobRestartException, JobInstanceAlreadyCompleteException {
 
         jobLauncher.run(job1(), new JobParametersBuilder().addLong("time", System.currentTimeMillis()).toJobParameters());
