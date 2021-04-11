@@ -1,5 +1,6 @@
-package com.example.demo.config;
+package com.example.demo.config.example;
 
+import com.example.demo.config.BatchJobConfiguration;
 import com.example.demo.dao.TestDTO;
 import com.example.demo.processors.TestItemProcessor;
 import com.example.demo.readers.TestItemReader;
@@ -9,8 +10,6 @@ import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.JobParametersInvalidException;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
-import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
-import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
@@ -22,34 +21,14 @@ import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.task.TaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
 
 @Configuration
-//@EnableScheduling
 @EnableBatchProcessing
-public class BatchConfiguration {
-
-    @Value("${async.thread.max.pool}")
-    private Integer maxPoolSize;
-
-    @Value("${async.thread.core.pool}")
-    private Integer corePoolSize;
-
-    @Value("${async.thread.queue}")
-    private Integer queueSize;
-
-    @Autowired
-    private JobBuilderFactory jobs;
-
-    @Autowired
-    private StepBuilderFactory steps;
+public class BatchConfiguration extends BatchJobConfiguration {
 
     @Autowired
     private JobLauncher jobLauncher;
@@ -84,21 +63,10 @@ public class BatchConfiguration {
         return asyncItemWriter;
     }
 
-    @Bean(name = "asyncExecutor")
-    public TaskExecutor getAsyncExecutor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(corePoolSize);
-        executor.setMaxPoolSize(corePoolSize);
-        executor.setQueueCapacity(queueSize);
-        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
-        executor.setThreadNamePrefix("AsyncExecutor-");
-        return executor;
-    }
-
     @Bean
     protected Step step1() {
         return this.steps.get("step1")
-                .<String, Future<TestDTO>>chunk(corePoolSize)
+                .<String, Future<TestDTO>>chunk(Integer.parseInt(core))
                 .reader(reader())
                 .processor(asyncItemProcessor())
                 .writer(asyncItemWriter())
