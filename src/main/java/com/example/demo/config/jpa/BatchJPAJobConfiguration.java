@@ -1,5 +1,6 @@
-package com.example.demo.config;
+package com.example.demo.config.jpa;
 
+import com.example.demo.config.BatchJobConfiguration;
 import com.example.demo.dao.CustomerInfoDAO;
 import com.example.demo.model.CustomerInfo;
 import com.example.demo.processors.CustomerInfoProcessor;
@@ -7,8 +8,6 @@ import com.example.demo.writers.CustomerDataWriter;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
-import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
-import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.integration.async.AsyncItemProcessor;
 import org.springframework.batch.integration.async.AsyncItemWriter;
@@ -18,8 +17,6 @@ import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
@@ -31,23 +28,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 @Configuration
 @EnableBatchProcessing
-public class BatchJPAJobConfiguration {
-
-    @Value("${reader.input.file}")
-    String inputFile;
-    @Value("${async.thread.max.pool}")
-    String maxThread;
-    @Value("${async.thread.core.pool}")
-    String core;
-    @Value("${async.thread.queue}")
-    String queue;
-    @Value("${job.chunk.size}")
-    String chunk;
-    @Autowired
-    private JobBuilderFactory jobs;
-
-    @Autowired
-    private StepBuilderFactory steps;
+public class BatchJPAJobConfiguration extends BatchJobConfiguration {
 
     @Bean
     protected Job importDBFromCSV() {
