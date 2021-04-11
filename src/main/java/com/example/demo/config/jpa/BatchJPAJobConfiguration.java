@@ -20,11 +20,8 @@ import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.task.TaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
 
 @Configuration
 @EnableBatchProcessing
@@ -66,24 +63,13 @@ public class BatchJPAJobConfiguration extends BatchJobConfiguration {
     public ItemProcessor<CustomerInfoDAO, Future<CustomerInfo>> processCustomerDataAsync() {
         AsyncItemProcessor<CustomerInfoDAO, CustomerInfo> asyncItemProcessor = new AsyncItemProcessor<>();
         asyncItemProcessor.setDelegate(processCustomerData());
-        asyncItemProcessor.setTaskExecutor(getAsyncExecutorCustomerInfo());
+        asyncItemProcessor.setTaskExecutor(getAsyncExecutor());
         return asyncItemProcessor;
     }
 
     @Bean
     public ItemProcessor<CustomerInfoDAO, CustomerInfo> processCustomerData() {
         return new CustomerInfoProcessor();
-    }
-
-    @Bean(name = "asyncExecutorCustomerInfo")
-    public TaskExecutor getAsyncExecutorCustomerInfo() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(Integer.parseInt(core));
-        executor.setMaxPoolSize(Integer.parseInt(maxThread));
-        executor.setQueueCapacity(Integer.parseInt(queue));
-        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
-        executor.setThreadNamePrefix("AsyncExecutor-");
-        return executor;
     }
 
     @Bean
