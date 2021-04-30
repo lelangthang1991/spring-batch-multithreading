@@ -27,10 +27,4 @@ public class CustomerInfo {
     private String seriesTitle3;
     private String seriesTitle4;
     private String seriesTitle5;
-
-//    Series_reference,Period,Data_value,STATUS,UNITS,Subject,Group,Series_title_1,Series_title_2,Series_title_3,Series_title_4,Series_title_5
-
-    /*
-{"seriesReference","period","dataValue","status","units","subject","group","seriesTitle1","seriesTitle2","seriesTitle3","seriesTitle4","seriesTitle5"}
-    * */
 }

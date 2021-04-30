@@ -14,12 +14,12 @@ public class TestItemReader implements ItemReader<String>, StepExecutionListener
     private List<String> cpfs;
 
     /**
-     * Próximo CPF a ser retornado.
+     * Next CPF to be returned.
      */
     private int next;
 
     /**
-     * Inicializando a lista
+     * Initializing the list
      */
     private void init(){
         cpfs = Arrays.asList("1", "2", "3", "4", "5", "6", "7", "8", "9", "10");
