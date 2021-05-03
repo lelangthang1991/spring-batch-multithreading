@@ -7,7 +7,7 @@ import java.util.List;
 
 public class CustomerDataWriter implements ItemWriter<CustomerInfo> {
     @Override
-    public void write(List<? extends CustomerInfo> list) throws Exception {
-
+    public void write(List<? extends CustomerInfo> list) {
+        // Do nothing
     }
 }

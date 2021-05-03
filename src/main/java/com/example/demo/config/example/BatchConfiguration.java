@@ -21,8 +21,10 @@ import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.TaskExecutor;
 
 import java.util.concurrent.Future;
 
@@ -49,42 +51,45 @@ public class BatchConfiguration extends BatchJobConfiguration {
     }
 
     @Bean
-    public ItemProcessor<String, Future<TestDTO>> asyncItemProcessor() {
+    public ItemProcessor<String, Future<TestDTO>> asyncItemProcessor(
+            @Qualifier("processor") ItemProcessor<String, TestDTO> processor,
+            @Qualifier("asyncExecutor") TaskExecutor getAsyncExecutor) {
         AsyncItemProcessor<String, TestDTO> asyncItemProcessor = new AsyncItemProcessor<>();
-        asyncItemProcessor.setDelegate(processor());
-        asyncItemProcessor.setTaskExecutor(getAsyncExecutor());
+        asyncItemProcessor.setDelegate(processor);
+        asyncItemProcessor.setTaskExecutor(getAsyncExecutor);
         return asyncItemProcessor;
     }
 
     @Bean
-    public ItemWriter<Future<TestDTO>> asyncItemWriter() {
+    public ItemWriter<Future<TestDTO>> asyncItemWriter(@Qualifier("writer") ItemWriter<TestDTO> writer) {
         AsyncItemWriter<TestDTO> asyncItemWriter = new AsyncItemWriter<>();
-        asyncItemWriter.setDelegate(writer());
+        asyncItemWriter.setDelegate(writer);
         return asyncItemWriter;
     }
 
     @Bean
-    protected Step step1() {
+    protected Step step1(@Qualifier("asyncItemProcessor") ItemProcessor<String, Future<TestDTO>> asyncItemProcessor,
+                         @Qualifier("asyncItemWriter") ItemWriter<Future<TestDTO>> asyncItemWriter) {
         return this.steps.get("step1")
                 .<String, Future<TestDTO>>chunk(Integer.parseInt(core))
                 .reader(reader())
-                .processor(asyncItemProcessor())
-                .writer(asyncItemWriter())
+                .processor(asyncItemProcessor)
+                .writer(asyncItemWriter)
                 .build();
     }
 
     @Bean
-    protected Job job1() {
+    protected Job job1(@Qualifier("step1") Step step1) {
         return this.jobs.get("job1")
                 .preventRestart()
                 .incrementer(new RunIdIncrementer())
-                .start(step1())
+                .start(step1)
                 .build();
     }
 
     //    @Scheduled(cron = "0 * * * * *", zone =  "America/Sao_Paulo")
-    public void schedule() throws JobParametersInvalidException, JobExecutionAlreadyRunningException, JobRestartException, JobInstanceAlreadyCompleteException {
+    public void schedule(@Qualifier("job1") Job job1) throws JobParametersInvalidException, JobExecutionAlreadyRunningException, JobRestartException, JobInstanceAlreadyCompleteException {
 
-        jobLauncher.run(job1(), new JobParametersBuilder().addLong("time", System.currentTimeMillis()).toJobParameters());
+        jobLauncher.run(job1, new JobParametersBuilder().addLong("time", System.currentTimeMillis()).toJobParameters());
     }
 }
