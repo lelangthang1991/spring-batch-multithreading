@@ -17,9 +17,11 @@ import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.task.TaskExecutor;
 
 import java.util.concurrent.Future;
 
@@ -28,29 +30,33 @@ import java.util.concurrent.Future;
 public class BatchJPAJobConfiguration extends BatchJobConfiguration {
 
     @Bean
-    protected Job importDBFromCSV() {
+    protected Job importDBFromCSV(@Qualifier("importData") Step importData) {
         return this.jobs.get("importDBFromCSV")
                 .preventRestart()
                 .incrementer(new RunIdIncrementer())
-                .start(importData())
+                .start(importData)
                 .build();
     }
 
     @Bean
-    protected Step importData() {
+    protected Step importData(
+            @Qualifier("csvReader") FlatFileItemReader<CustomerInfoDAO> csvReader,
+            @Qualifier("processCustomerDataAsync") ItemProcessor<CustomerInfoDAO, Future<CustomerInfo>> processCustomerDataAsync,
+            @Qualifier("writeCustomerDataAsync") ItemWriter<Future<CustomerInfo>> writeCustomerDataAsync) {
         return this.steps.get("importData")
                 .<CustomerInfoDAO, Future<CustomerInfo>>chunk(Integer.parseInt(chunk))
-                .reader(csvReader())
-                .processor(processCustomerDataAsync())
-                .writer(writeCustomerDataAsync())
+                .reader(csvReader)
+                .processor(processCustomerDataAsync)
+                .writer(writeCustomerDataAsync)
                 .build();
 
     }
 
     @Bean
-    public ItemWriter<Future<CustomerInfo>> writeCustomerDataAsync() {
+    public ItemWriter<Future<CustomerInfo>> writeCustomerDataAsync(
+            @Qualifier("writeCustomerData") ItemWriter<CustomerInfo> writeCustomerData) {
         AsyncItemWriter<CustomerInfo> wr = new AsyncItemWriter<>();
-        wr.setDelegate(writeCustomerData());
+        wr.setDelegate(writeCustomerData);
         return wr;
     }
 
@@ -60,10 +66,12 @@ public class BatchJPAJobConfiguration extends BatchJobConfiguration {
     }
 
     @Bean
-    public ItemProcessor<CustomerInfoDAO, Future<CustomerInfo>> processCustomerDataAsync() {
+    public ItemProcessor<CustomerInfoDAO, Future<CustomerInfo>> processCustomerDataAsync(
+            @Qualifier("processCustomerData") ItemProcessor<CustomerInfoDAO, CustomerInfo> processCustomerData,
+            @Qualifier("asyncExecutor") TaskExecutor getAsyncExecutor) {
         AsyncItemProcessor<CustomerInfoDAO, CustomerInfo> asyncItemProcessor = new AsyncItemProcessor<>();
-        asyncItemProcessor.setDelegate(processCustomerData());
-        asyncItemProcessor.setTaskExecutor(getAsyncExecutor());
+        asyncItemProcessor.setDelegate(processCustomerData);
+        asyncItemProcessor.setTaskExecutor(getAsyncExecutor);
         return asyncItemProcessor;
     }
 
