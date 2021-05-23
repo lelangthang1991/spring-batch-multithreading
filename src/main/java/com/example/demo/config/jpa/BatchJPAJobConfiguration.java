@@ -20,12 +20,14 @@ import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.task.TaskExecutor;
 
 import java.util.concurrent.Future;
 
 @Configuration
+@Profile("importDBFromCSV")
 @EnableBatchProcessing
 public class BatchJPAJobConfiguration extends BatchJobConfiguration {
 
